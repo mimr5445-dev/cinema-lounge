@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chats     Chat[]
+}
+
+enum Role {
+  VIEWER
+  EDITOR
+  ADMIN
+}
+
+model Movie {
+  id            String   @id @default(cuid())
+  number        Int      @unique
+  title         String
+  originalTitle String?
+  titleSearch   String?
+  year          Int?
+  duration      Int?
+  plot          String?  @db.Text
+  plotAi        String?  @db.Text
+  genre         String[]
+  tags          String[]
+  rating        Float?   @default(0)
+  language      String?  @default("en")
+  posterUrl     String?
+  backdropUrl   String?
+  watchUrl      String?
+  trailerUrl    String?
+  tmdbId        String?
+  isFeatured    Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  aiGenerated   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  images        MovieImage[]
+  chats         Chat[]
+}
+
+model MovieImage {
+  id        String    @id @default(cuid())
+  movieId   String
+  url       String
+  type      ImageType @default(POSTER)
+  isPrimary Boolean   @default(false)
+  movie     Movie     @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+}
+
+enum ImageType {
+  POSTER
+  BACKDROP
+  SCENE
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  userId    String?
+  movieId   String?
+  messages  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id])
+  movie     Movie?   @relation(fields: [movieId], references: [id])
+}
+
+model Settings {
+  id    String @id @default("main")
+  key   String @unique
+  value String @db.Text
+}
