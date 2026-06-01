@@ -74,6 +74,6 @@ export default function HomePage() {
 
       {/* Floating Chat Widget */}
       <ChatWidget />
-    </div>
+    </main>
   );
 }
