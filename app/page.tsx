@@ -16,9 +16,16 @@ export default function HomePage() {
       try {
         const res = await fetch('/api/movies');
         const data = await res.json();
-        setMovies(data);
+        // التأكد من أن البيانات مصفوفة لتجنب تعطل العميل
+        if (Array.isArray(data)) {
+          setMovies(data);
+        } else {
+          console.error("Data received is not an array:", data);
+          setMovies([]);
+        }
       } catch (error) {
         console.error("Error fetching movies:", error);
+        setMovies([]);
       } finally {
         setLoading(false);
       }
@@ -26,14 +33,17 @@ export default function HomePage() {
     fetchMovies();
   }, []);
 
-  const featuredMovie = movies.find(m => m.isFeatured) || movies[0] || {
+  // تأمين الوصول للبيانات مع قيم افتراضية قوية
+  const safeMovies = Array.isArray(movies) ? movies : [];
+  
+  const featuredMovie = safeMovies.find(m => m?.isFeatured) || safeMovies[0] || {
     title: "مرحبًا بك في استراحة السينما",
-    backdropUrl: "https://image.tmdb.org/t/p/original/bOGkgBujMD917UnBUZ6v17Z919W.jpg",
-    plot: "استكشف عالم السينما بذكاء اصطناعي وأناقة ذهبية."
+    backdropUrl: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop",
+    plot: "استكشف عالم السينما بذكاء اصطناعي وأناقة ذهبية. ابدأ بإضافة أفلامك المفضلة من لوحة التحكم."
   };
 
-  const recentMovies = movies.slice(0, 10);
-  const popularMovies = [...movies].sort((a, b) => b.rating - a.rating).slice(0, 10);
+  const recentMovies = safeMovies.slice(0, 10);
+  const popularMovies = [...safeMovies].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 10);
 
   return (
     <main className="min-h-screen bg-[#07070f]">
